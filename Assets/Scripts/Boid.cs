@@ -11,51 +11,120 @@ public class Boid : MonoBehaviour
     public float detectionRadius = 5.0f;
     public float speed = 1.0f;
     public float maxSpeed = 10.0f;
-    private Vector3 _velocity;
+    [HideInInspector] Vector3 velocity;
     public float minimumDistance = 1.0f;
-    [Range(0.0f, 1.0f)] public float seperation = 1.0f;
-    [Range(0.0f, 1.0f)] public float alignement = 1.0f;
-    [Range(0.0f, 1.0f)] public float cohesion = 1.0f;
+    public float boundaryStrength = 50f;
+    [Range(-1, 1)] public float seperation = 1f;
+    [Range(-1, 1)] public float alignement = 1f;
+    [Range(-1, 1)] public float cohesion = 1f;
+
+    private int boidLayer;
 
     private Collider[] _nearbyBoids;
 
-    private int Xmin = -25, Xmax = 25, Ymin = 0, Ymax = 20, Zmin = -25, Zmax = 25;
+    private int Xmin = -25, Xmax = 25, Ymin = -10, Ymax = 10, Zmin = -25, Zmax = 25;
 
 
     void Start()
     {
-        _velocity = new Vector3(Random.Range(speed, maxSpeed), Random.Range(speed, maxSpeed), Random.Range(speed, maxSpeed));
+        velocity = new Vector3(Random.Range(speed, maxSpeed), Random.Range(speed, maxSpeed),
+            Random.Range(speed, maxSpeed));
+        boidLayer = 1 << LayerMask.NameToLayer("Boid");
+
+        speed = Random.Range(2.0f, 4.0f);
+        detectionRadius = Random.Range(2.0f, 5.0f);
+        minimumDistance = Random.Range(1.0f, 3.0f);
+        seperation = Random.Range(0.1f, 0.5f);
+        alignement = Random.Range(0.1f, 0.5f);
+        cohesion = Random.Range(0.5f, 0.9f);
     }
 
     // Update is called once per frame
     void Update()
     {
-        _nearbyBoids = Physics.OverlapSphere(transform.position, detectionRadius);
+        _nearbyBoids = Physics.OverlapSphere(transform.position, detectionRadius, boidLayer);
 
-        var s = SeperationRule() * seperation;
-        var v = CheckBoundaries();
+        var v1 = SeperationRule() * seperation;
+        var v2 = AlignmentRule() * alignement;
+        var v3 = CohesionRule() * cohesion;
 
-        _velocity += s;
-        _velocity += v;
 
-        if (_velocity.magnitude > maxSpeed)
+        Vector3 place = Vector3.zero;
+        Vector3 v4 = place - transform.position / 100;
+
+        var v5 = CheckBoundaries();
+
+
+        velocity += v1 + v2 + v3 + v5;
+
+        if (velocity.magnitude > maxSpeed)
         {
-            _velocity = (_velocity / _velocity.magnitude) * maxSpeed;
+            velocity = (velocity / velocity.magnitude) * maxSpeed;
         }
+
         //Apply Orientation
-        transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(_velocity), 0.15f);
-        transform.Translate(_velocity * (speed * Time.deltaTime), Space.World);
+        if (
+            velocity != Vector3
+                .zero /*&& !(float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z))*/)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(velocity), 0.15f);
+            transform.Translate(velocity * (speed * Time.deltaTime), Space.World);
+        }
+    }
+
+    private Vector3 AlignmentRule()
+    {
+        Vector3 v3 = Vector3.zero;
+        foreach (var boid in _nearbyBoids)
+        {
+            if (boid.transform.root != transform)
+            {
+                Boid b = boid.gameObject.GetComponentInParent<Boid>();
+                if (b != null)
+                {
+                    v3 += b.velocity;
+                }
+            }
+        }
+
+        if (_nearbyBoids.Length > 1)
+        {
+            v3 /= _nearbyBoids.Length - 1;
+            return (v3 - velocity) / 16;
+        }
+        return Vector3.zero;
+    }
+
+    private Vector3 CohesionRule()
+    {
+        Vector3 pc = Vector3.zero;
+        foreach (var boid in _nearbyBoids)
+        {
+            if (boid.transform.root != transform)
+            {
+                pc += boid.gameObject.transform.position;
+            }
+        }
+
+        if (_nearbyBoids.Length > 1)
+        {
+            pc /= _nearbyBoids.Length - 1;
+            pc = (pc - transform.position) / 100.0f;
+            Debug.DrawLine(transform.position, transform.position + pc);
+            return pc;
+        }
+        return Vector3.zero;
     }
 
     private Vector3 CheckBoundaries()
     {
         Vector3 v = Vector3.zero;
-        if (transform.position.x < Xmin) v.x = 10;
-        else if (transform.position.x > Xmax) v.x = -10;
-        if (transform.position.y < Ymin) v.y = 10;
-        else if (transform.position.y > Ymax) v.y = -10;
-        if (transform.position.z < Zmin) v.z = 10;
-        else if (transform.position.z > Zmax) v.z = -10;
+        if (transform.position.x < Xmin) v.x = boundaryStrength;
+        else if (transform.position.x > Xmax) v.x = -boundaryStrength;
+        if (transform.position.y < Ymin) v.y = boundaryStrength;
+        else if (transform.position.y > Ymax) v.y = -boundaryStrength;
+        if (transform.position.z < Zmin) v.z = boundaryStrength;
+        else if (transform.position.z > Zmax) v.z = -boundaryStrength;
         return v;
     }
 
@@ -66,16 +135,13 @@ public class Boid : MonoBehaviour
         {
             if (boid.transform.root != transform)
             {
+                if (Vector3.Distance(boid.gameObject.transform.position, transform.position) < minimumDistance)
                 {
-                    if (Vector3.Distance(boid.gameObject.transform.position, transform.position) < minimumDistance)
-                    {
-                        c = c - (boid.gameObject.transform.position - transform.position);
-                    }
+                    c = c - (boid.gameObject.transform.position - transform.position);
                 }
             }
         }
-
-        return c;
+        return c / 100;
     }
 
 

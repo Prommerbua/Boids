@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 3014394191235537044}
   - component: {fileID: 3014394191235537045}
   - component: {fileID: 3014394191235537046}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Mesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1200,7 +1200,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3014394191511924217}
   - component: {fileID: 3014394191511924216}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Boid
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1235,8 +1235,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   detectionRadius: 5
-  speed: 1
-  minimumDistance: 1
-  seperation: 1
-  alignement: 1
-  cohesion: 1
+  speed: 2
+  maxSpeed: 30
+  minimumDistance: 3
+  boundaryStrength: 10
+  seperation: 0.1
+  alignement: 0.1
+  cohesion: 0.1
