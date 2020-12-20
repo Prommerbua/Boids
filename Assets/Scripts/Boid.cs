@@ -10,10 +10,12 @@ public class Boid : MonoBehaviour
     // Start is called before the first frame update
     public float detectionRadius = 5.0f;
     public float speed = 1.0f;
+    public float minSpeed = 10.0f;
     public float maxSpeed = 10.0f;
     [HideInInspector] Vector3 velocity;
     public float minimumDistance = 1.0f;
     public float boundaryStrength = 50f;
+    public Vector3 TendToPlace;
     [Range(-1, 1)] public float seperation = 1f;
     [Range(-1, 1)] public float alignement = 1f;
     [Range(-1, 1)] public float cohesion = 1f;
@@ -31,12 +33,12 @@ public class Boid : MonoBehaviour
             Random.Range(speed, maxSpeed));
         boidLayer = 1 << LayerMask.NameToLayer("Boid");
 
-        speed = Random.Range(2.0f, 4.0f);
-        detectionRadius = Random.Range(2.0f, 5.0f);
-        minimumDistance = Random.Range(1.0f, 3.0f);
-        seperation = Random.Range(0.1f, 0.5f);
-        alignement = Random.Range(0.1f, 0.5f);
-        cohesion = Random.Range(0.5f, 0.9f);
+        // speed = Random.Range(2.0f, 4.0f);
+        // detectionRadius = Random.Range(2.0f, 5.0f);
+        // minimumDistance = Random.Range(1.0f, 3.0f);
+        // seperation = Random.Range(0.1f, 0.5f);
+        // alignement = Random.Range(0.1f, 0.5f);
+        // cohesion = Random.Range(0.5f, 0.9f);
     }
 
     // Update is called once per frame
@@ -47,10 +49,7 @@ public class Boid : MonoBehaviour
         var v1 = SeperationRule() * seperation;
         var v2 = AlignmentRule() * alignement;
         var v3 = CohesionRule() * cohesion;
-
-
-        Vector3 place = Vector3.zero;
-        Vector3 v4 = place - transform.position / 100;
+        var v4 = TendToPlace - transform.position / 100;
 
         var v5 = CheckBoundaries();
 
@@ -63,9 +62,12 @@ public class Boid : MonoBehaviour
         }
 
         //Apply Orientation
-        if (
-            velocity != Vector3
-                .zero /*&& !(float.IsNaN(velocity.x) || float.IsNaN(velocity.y) || float.IsNaN(velocity.z))*/)
+        if (velocity.magnitude < minSpeed)
+        {
+            velocity = (velocity / velocity.magnitude) * minSpeed;
+        }
+
+        if (velocity != Vector3.zero)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(velocity), 0.15f);
             transform.Translate(velocity * (speed * Time.deltaTime), Space.World);

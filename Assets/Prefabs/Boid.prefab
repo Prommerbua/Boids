@@ -1235,10 +1235,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   detectionRadius: 5
-  speed: 2
-  maxSpeed: 30
+  speed: 1
+  minSpeed: 20
+  maxSpeed: 50
   minimumDistance: 3
   boundaryStrength: 10
-  seperation: 0.1
-  alignement: 0.1
-  cohesion: 0.1
+  seperation: 1
+  alignement: 1
+  cohesion: 1
