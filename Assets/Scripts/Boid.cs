@@ -24,7 +24,7 @@ public class Boid : MonoBehaviour
 
     private Collider[] _nearbyBoids;
 
-    private int Xmin = -25, Xmax = 25, Ymin = -10, Ymax = 10, Zmin = -25, Zmax = 25;
+    public float Xmin = -25, Xmax = 25, Ymin = -10, Ymax = 10, Zmin = -25, Zmax = 25;
 
 
     void Start()

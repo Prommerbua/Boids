@@ -47,10 +47,18 @@ public class BoidSpawnManager : MonoBehaviour
             boid.GetComponent<Boid>().maxSpeed = maxSpeed;
             boid.GetComponent<Boid>().minimumDistance = minimumDistance;
             boid.GetComponent<Boid>().boundaryStrength = boundaryStrength;
-            boid.GetComponent<Boid>().TendToPlace = TendToPlace.position;
+            //boid.GetComponent<Boid>().TendToPlace = Vector3.zero;
             boid.GetComponent<Boid>().seperation = seperation;
             boid.GetComponent<Boid>().alignement = alignement;
             boid.GetComponent<Boid>().cohesion = cohesion;
+
+            boid.GetComponent<Boid>().Xmin = Xmin.position.x;
+            boid.GetComponent<Boid>().Xmax = Xmax.position.x;
+            boid.GetComponent<Boid>().Ymin = Ymin.position.y;
+            boid.GetComponent<Boid>().Ymax = Ymax.position.y;
+            boid.GetComponent<Boid>().Zmin = Zmin.position.z;
+            boid.GetComponent<Boid>().Zmax = Zmax.position.z;
+
 
         }
     }
